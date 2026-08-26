@@ -1,0 +1,12 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ShareLinks } from "@/components/share-links";
+import { formatDate, getText, getTexts, renderMarkdown } from "@/lib/texts";
+import { absoluteUrl, siteConfig } from "@/lib/site";
+
+export function generateStaticParams() { return getTexts().map(({ slug }) => ({ slug })); }
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> { const text = getText((await params).slug); if (!text) return {}; return { title: text.title, description: text.description, alternates: absoluteUrl(`/textos/${text.slug}`) ? { canonical: absoluteUrl(`/textos/${text.slug}`) } : undefined, openGraph: { type: "article", title: text.title, description: text.description, publishedTime: text.date, images: text.cover ? [text.cover] : undefined } }; }
+export default async function TextPage({ params }: { params: Promise<{ slug: string }> }) { const text = getText((await params).slug); if (!text) notFound(); const texts = getTexts(); const index = texts.findIndex(t => t.slug === text.slug); const previous = texts[index + 1]; const next = texts[index - 1]; const schema = { "@context":"https://schema.org", "@type":"Article", headline:text.title, description:text.description, datePublished:text.date, author:{"@type":"Person",name:siteConfig.name}, mainEntityOfPage:absoluteUrl(`/textos/${text.slug}`) };
+return <article className="article-page"><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/><header className="article-header"><Link href="/textos" className="eyebrow">Textos</Link><h1>{text.title}</h1><p className="lead">{text.description}</p><p className="text-meta"><time dateTime={text.date}>{formatDate(text.date)}</time><span>{text.readingTime}</span></p></header>{text.cover && <div className="article-cover"><Image src={text.cover} alt="Paisagem silenciosa ao pôr do sol" fill priority sizes="100vw" /></div>}<div className="article-body" dangerouslySetInnerHTML={{__html:renderMarkdown(text.content)}}/><div className="article-share"><ShareLinks title={text.title}/></div><nav className="article-nav" aria-label="Textos anterior e seguinte"><div>{previous && <><span>Anterior</span><Link href={`/textos/${previous.slug}`}>{previous.title}</Link></>}</div><div>{next && <><span>Seguinte</span><Link href={`/textos/${next.slug}`}>{next.title}</Link></>}</div></nav></article>; }
