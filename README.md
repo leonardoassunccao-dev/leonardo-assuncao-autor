@@ -2,6 +2,8 @@
 
 Site literário oficial do autor Leonardo Assunção de Oliveira, desenvolvido com Next.js, TypeScript, Tailwind CSS e Framer Motion.
 
+Produção: [leonardo-assuncao-autor.vercel.app](https://leonardo-assuncao-autor.vercel.app)
+
 ## Executar localmente
 
 ```bash
